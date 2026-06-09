@@ -1,0 +1,4 @@
+interface:
+  display_name: "Production Incident Root Cause"
+  short_description: "Force evidence-led root-cause analysis before production fixes."
+  default_prompt: "Use this skill for production incidents, broken deployments, failing pipelines, runtime outages, and user-facing regressions before proposing or implementing a fix."
