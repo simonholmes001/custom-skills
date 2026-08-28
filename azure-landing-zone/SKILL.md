@@ -45,6 +45,7 @@ If a request is scoped (for example network topology only), do a scoped source p
 
 ## Load References
 
+- **MANDATORY**: For resource group separation rules, read `references/resource-group-separation.md` BEFORE generating any Azure IaC.
 - Canonical links and scope: `references/official-docs.md`
 - Full-pass protocol and evidence grading: `references/source-pass-protocol.md`
 - Topic coverage checklist: `references/source-coverage-matrix.md`
@@ -55,15 +56,16 @@ If a request is scoped (for example network topology only), do a scoped source p
 
 ## Design Rules
 
-1. Separate platform foundation subscriptions from workload subscriptions.
-2. Define management group hierarchy before policy assignment sprawl.
-3. Enforce policy-as-code with a clear exemption process.
-4. Choose network topology based on scale/transit complexity and operations model.
-5. Standardize identity and privileged-access controls early.
-6. Establish centralized logging/security telemetry from day one.
-7. Onboard workloads only after guardrail validation.
-8. Track exceptions with owner, rationale, expiry, and compensating controls.
-9. Separate source-verified facts from derived guidance and assumptions.
+1. **MANDATORY**: Enforce resource group separation by architectural concern (network, compute, data, security, ops, integration) per `references/resource-group-separation.md`. Never place resources from multiple concerns in the same resource group.
+2. Separate platform foundation subscriptions from workload subscriptions.
+3. Define management group hierarchy before policy assignment sprawl.
+4. Enforce policy-as-code with a clear exemption process.
+5. Choose network topology based on scale/transit complexity and operations model.
+6. Standardize identity and privileged-access controls early.
+7. Establish centralized logging/security telemetry from day one.
+8. Onboard workloads only after guardrail validation.
+9. Track exceptions with owner, rationale, expiry, and compensating controls.
+10. Separate source-verified facts from derived guidance and assumptions.
 
 ## Output Contract
 
@@ -71,11 +73,12 @@ For each landing-zone response, return:
 
 1. `Context Summary`
 2. `Source Coverage Summary` (read, skipped, gaps)
-3. `Target-State Architecture`
+3. `Target-State Architecture` with **explicit resource groups** organized by separation of concerns (network/compute/data/security/ops/integration)
 4. `Design Area Decisions and Tradeoffs`
 5. `Platform Controls and Guardrails`
 6. `Phased Implementation and Onboarding Plan`
 7. `Validation, Risks, and Rollback Strategy`
+8. **Validate**: Confirm no single resource group contains resources from multiple concerns
 
 ## Evidence Expectations
 
