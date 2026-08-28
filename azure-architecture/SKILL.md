@@ -23,6 +23,7 @@ Design production-ready Azure platforms and workload architectures with clear tr
 
 ## Load References Selectively
 
+- **MANDATORY**: For resource group separation rules, read `references/resource-group-separation.md` BEFORE generating any Azure IaC.
 - For foundation and platform boundaries, read `references/landing-zone-blueprint.md`.
 - For quality checks and architecture tradeoffs, read `references/architecture-review-checklist.md`.
 - For governance, identity, and security guardrails, read `references/governance-security-baseline.md`.
@@ -43,14 +44,15 @@ Collect before recommending architecture:
 ## Design Rules
 
 Apply these rules consistently:
-1. Separate platform foundation from workload subscriptions.
-2. Use management groups and policy-as-code for guardrails first.
-3. Use hub-and-spoke or Virtual WAN for shared connectivity at scale.
-4. Prefer private service connectivity for sensitive data paths.
-5. Standardize observability and security telemetry from day one.
-6. Define failure domains and cross-zone/region strategy explicitly.
-7. Design for least privilege with RBAC and managed identities.
-8. Enforce tagging, naming, and budget controls at onboarding time.
+1. **MANDATORY**: Enforce resource group separation by architectural concern (network, compute, data, security, ops, integration) per `references/resource-group-separation.md`. Never place resources from multiple concerns in the same resource group.
+2. Separate platform foundation from workload subscriptions.
+3. Use management groups and policy-as-code for guardrails first.
+4. Use hub-and-spoke or Virtual WAN for shared connectivity at scale.
+5. Prefer private service connectivity for sensitive data paths.
+6. Standardize observability and security telemetry from day one.
+7. Define failure domains and cross-zone/region strategy explicitly.
+8. Design for least privilege with RBAC and managed identities.
+9. Enforce tagging, naming, and budget controls at onboarding time.
 
 ## Landing Zone Scope
 
@@ -67,10 +69,12 @@ Always include:
 
 For every architecture answer:
 1. Provide target-state architecture in concise bullets.
-2. Explain major tradeoffs and why the recommendation fits.
-3. List required guardrails and platform controls.
-4. Provide phased rollout plan (foundation, migration, hardening).
-5. Include validation checks, risks, and rollback strategy.
+2. **Explicitly list resource groups** organized by separation of concerns (network/compute/data/security/ops/integration).
+3. Explain major tradeoffs and why the recommendation fits.
+4. List required guardrails and platform controls.
+5. Provide phased rollout plan (foundation, migration, hardening).
+6. Include validation checks, risks, and rollback strategy.
+7. **Validate**: Confirm no single resource group contains resources from multiple concerns.
 
 ## Delivery Templates
 
