@@ -31,6 +31,7 @@ Generated: 2026-05-04 12:56:48 CEST
 ### github
 - `gh-project-ops` (subdomain: `github-operations`)
 - `github-mcp` (subdomain: `github-operations`)
+- `repository-bootstrap` (subdomain: `repository-controls`)
 
 ### engineering-practice
 - `branch-discipline` (subdomain: `delivery-quality`)

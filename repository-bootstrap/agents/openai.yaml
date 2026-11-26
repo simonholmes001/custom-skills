@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Bootstrap"
+  short_description: "Set up and verify Simon’s standard GitHub repository controls."
+  default_prompt: "Use $repository-bootstrap to prepare this repository with my usual controls and report what is active."
