@@ -14,11 +14,19 @@ This repository provides a reusable catalog of custom AI assistant skills.
    git clone https://github.com/simonholmes001/custom-skills.git
    cd custom-skills
    ```
-2. Copy skills into your local skills directory:
+2. Link the clone into Codex and Claude, and keep it current automatically (macOS):
    ```bash
-   rsync -a --delete --exclude '.git/' --exclude '__pycache__/' ./ ~/.codex/skills/
+   ln -s "$PWD" ~/.codex/skills          # once; Codex reads skills straight from the clone
+   bash scripts/install-local-sync.sh    # links AGENTS.md, CLAUDE.md and every skill; installs the hourly LaunchAgent
    ```
+   The `local.custom-skills.sync` LaunchAgent runs `scripts/sync-local.sh` at login and hourly. It fast-forwards the clone to `origin/main` (only while it is on `main`), links `~/.codex/AGENTS.md` and `~/.claude/CLAUDE.md` to `global-instructions/`, links each skill into `~/.claude/skills/`, and prunes links to removed skills. Existing regular files are backed up, never overwritten. The log is at `~/Library/Logs/custom-skills-sync.log`.
 3. Start your assistant runtime and use skills from this catalog.
+
+Do not edit the linked clone directly. Make changes in a worktree **outside** the clone (e.g. `../skills-worktrees/<branch>`) so Codex does not load skills twice, then open a PR.
+
+## Global Agent Instructions
+
+`global-instructions/AGENTS.md` is the owner's engineering operating model for every agent: rules, the skill routing table, TDD, hooks, CI/CD, Codex review, releases, Azure and iOS delivery, and the stack. `global-instructions/CLAUDE.md` imports it for Claude Code and adds Claude-specific notes. Both are linked into place by `scripts/sync-local.sh`. Run `bash scripts/tests/sync-local.test.sh` after changing the sync scripts.
 
 ## How To Use Skills
 

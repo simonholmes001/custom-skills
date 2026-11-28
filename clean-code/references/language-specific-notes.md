@@ -8,6 +8,8 @@
 
 ## Python
 
+> Not part of the owner's stack. Apply only when reviewing third-party or legacy code, and do not introduce new Python.
+
 - Prefer explicitness and readable control flow.
 - Use type hints for public interfaces.
 - Keep data models and service boundaries clear.

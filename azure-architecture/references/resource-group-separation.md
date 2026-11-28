@@ -150,13 +150,13 @@ Examples:
 - rg-prod-eastus-data-api
 - rg-prod-eastus-security
 - rg-prod-eastus-ops
-- rg-dev-westeurope-compute-frontend
-- rg-dev-westeurope-data-frontend
+- rg-dev-francecentral-compute-frontend
+- rg-dev-francecentral-data-frontend
 ```
 
 Where:
 - `{environment}`: dev, test, staging, prod
-- `{region}`: Azure region short code (eastus, westeurope, etc.)
+- `{region}`: Azure region short code (francecentral by default; eastus, westeurope, etc.)
 - `{concern}`: network, compute, data, security, ops, integration
 - `{workload}`: optional workload identifier when multiple workloads in same subscription
 

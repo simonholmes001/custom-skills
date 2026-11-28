@@ -31,7 +31,7 @@ If a task is tiny (for example one API symbol lookup), you may do a scoped sourc
 
 ## Workflow
 
-1. Clarify runtime and scope: .NET or Python, local or Azure-hosted, single-agent or multi-agent.
+1. Clarify runtime and scope: local or Azure-hosted, single-agent or multi-agent. **Default to the .NET SDK.** Python is not part of the owner's stack, so use Python samples only to understand concepts and implement in .NET.
 2. Perform source pass and mark coverage by topic.
 3. Choose lowest viable complexity: direct model call, single agent with tools, or multi-agent orchestration.
 4. Select orchestration pattern by coordination needs (sequential, concurrent, group chat, handoff, magnetic).
