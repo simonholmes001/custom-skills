@@ -66,6 +66,7 @@ If a request is scoped (for example network topology only), do a scoped source p
 8. Onboard workloads only after guardrail validation.
 9. Track exceptions with owner, rationale, expiry, and compensating controls.
 10. Separate source-verified facts from derived guidance and assumptions.
+11. Default region is `francecentral`, supplied through `AZURE_LOCATION` and never hard-coded. Record deviations in an ADR.
 
 ## Output Contract
 

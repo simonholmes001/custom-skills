@@ -53,6 +53,7 @@ Apply these rules consistently:
 7. Define failure domains and cross-zone/region strategy explicitly.
 8. Design for least privilege with RBAC and managed identities.
 9. Enforce tagging, naming, and budget controls at onboarding time.
+10. Default region is `francecentral`, supplied through `AZURE_LOCATION` and never hard-coded. Record any other region choice (service availability, data residency) in an ADR.
 
 ## Landing Zone Scope
 

@@ -20,6 +20,8 @@
 
 ## Python
 
+> Not part of the owner's stack. Apply only when reviewing third-party or legacy code, and do not introduce new Python.
+
 - Keep FastAPI/Django concerns out of use case modules.
 - Use protocol or abstract interfaces for ports.
 - Keep pydantic/ORM models at boundaries with explicit mapping.

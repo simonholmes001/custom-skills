@@ -15,6 +15,8 @@
 
 ## Python
 
+> Not part of the owner's stack. Do not introduce Python tests or tooling into owner repositories. Kept for reviewing third-party code only.
+
 - Common test frameworks: pytest, unittest.
 - Unit test command pattern: `pytest path/to/test_file.py -k <name>`.
 - Use fixtures for setup reuse and explicit dependencies.
