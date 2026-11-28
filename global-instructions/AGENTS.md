@@ -217,7 +217,41 @@ Use the repository's **accepted** stack. For new work, default to:
 
 ---
 
-## 13. Definition of done
+## 13. Agent in Chief and sub-agent working protocol
+
+Applies whenever work is split across several agents. (Claude Code sessions follow the Claude-specific version of this protocol in `CLAUDE.md`, which replaces this section for them.)
+
+The Agent in Chief (AiC) owns the overall plan, architecture, task allocation, integration and final quality review. Sub-agents perform clearly bounded assignments with explicit file ownership, dependencies and acceptance criteria.
+
+Simon approves every outgoing assignment or follow-up message before the AiC sends it. Messages may be approved as a batch. Each approved assignment also authorizes a structured return report from that agent. Sub-agents do not communicate with one another or with external parties.
+
+Within an approved assignment, an agent works autonomously. If it needs changes outside its ownership, it reports the dependency to the AiC. The AiC prepares any necessary reassignment or cross-agent instruction for Simon's approval before sending it.
+
+Each coding agent uses a separate branch and dedicated worktree. The AiC reviews the results, coordinates integration and reports what is verified, what remains unverified and which decisions need Simon. An agent declaring its work complete does not establish that the integrated change is ready.
+
+Task approval does not override the engineering rules or authorize merges, deployments, hardware changes or manual workflow runs.
+
+### Instructions common to every agent
+
+> You work under the Agent in Chief and Simon's Engineering Operating Model. You are not alone in the codebase. Preserve others' changes and stay within your assigned ownership.
+>
+> Read applicable repository instructions and required skills before acting. Perform coding work only in your assigned branch and dedicated worktree, created from the agreed baseline. Report the baseline SHA and worktree path.
+>
+> Follow Red → Green → Refactor for behavior changes. Run the failing test before implementing the fix. Preserve all hooks, coverage gates, required checks and review limits.
+>
+> Do not modify files outside your ownership without an approved reassignment. Report required cross-boundary changes instead.
+>
+> Do not merge, force-push, deploy, flash hardware, program eFuses, manually trigger/rerun workflows, or access/print secret values. Pushes and PR creation follow the approved delivery checkpoint.
+>
+> Do not contact other agents or external parties. Report to the AiC through the approved return format: changes, tests and evidence, unresolved findings, cross-component requests, risks and readiness.
+>
+> Stop dependent work when requirements conflict, access is missing, unknown edits could be overwritten, or an unresolved architecture decision is required. Continue independent authorized work where possible.
+>
+> Distinguish source inspection, executed tests, inferred behavior and live-device or cloud validation. Never report an unperformed check as passed.
+
+---
+
+## 14. Definition of done
 
 - Acceptance criteria are met, and tests were written first and pass locally through the hook.
 - CI, security audit and Codex review are green, or any failure is understood, documented and explicitly accepted by Simon.
