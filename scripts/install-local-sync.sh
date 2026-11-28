@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One-time setup per machine: link everything now and install a macOS LaunchAgent
-# that re-runs scripts/sync-local.sh at login and every hour.
+# that re-runs scripts/sync-local.sh at login and every 5 minutes.
 #
 # Run from the main clone that ~/.codex/skills points at (not from a worktree):
 #   bash scripts/install-local-sync.sh
@@ -14,7 +14,7 @@ LAUNCH_AGENTS_DIR="${LAUNCH_AGENTS_DIR:-$HOME/Library/LaunchAgents}"
 LABEL="local.custom-skills.sync"
 PLIST="$LAUNCH_AGENTS_DIR/$LABEL.plist"
 LOG_DIR="$HOME/Library/Logs"
-INTERVAL_SECONDS="${SYNC_INTERVAL_SECONDS:-3600}"
+INTERVAL_SECONDS="${SYNC_INTERVAL_SECONDS:-300}"
 
 SKILLS_REPO="$SKILLS_REPO" bash "$(dirname "$0")/sync-local.sh" || echo "Initial sync reported a problem; see output above."
 

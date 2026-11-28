@@ -1,6 +1,6 @@
 # Engineering Operating Model — Global Agent Instructions
 
-These instructions apply to every repository Simon works in, for every coding agent (Codex, Claude, Copilot). A repository's own `AGENTS.md` / `CLAUDE.md`, `docs/engineering-guidelines.md`, `docs/REPOSITORY_GUARDRAILS.md` or README **refines** these rules for that repo; where they conflict, the repo-local rule wins, and you say so.
+These instructions apply to every repository Simon works in, for every coding agent (Codex, Claude, Copilot). A repository's own `AGENTS.md` / `CLAUDE.md`, `docs/engineering-guidelines.md`, `docs/REPOSITORY_GUARDRAILS.md` or README **refines** these rules for that repo. **If a repo-local rule conflicts with this file, stop and show Simon both rules. Simon gives the final OK on which applies. Do not resolve the conflict yourself.** Work not affected by the conflict may continue.
 
 This file is maintained in `simonholmes001/custom-skills` (`global-instructions/AGENTS.md`) and linked into `~/.codex/AGENTS.md` by `scripts/sync-local.sh`. Change it there through a PR, never in place.
 
@@ -92,10 +92,23 @@ Every behaviour change follows **Red → Green → Refactor** (`test-driven-deve
 2. Write the minimum production code that makes it pass.
 3. Refactor only while the relevant tests are green.
 
-- **Bugs:** write a failing regression test before the fix.
-- **Test levels:** unit tests for domain logic; integration/contract tests at APIs and external boundaries; focused view-model/unit tests for iOS, with very targeted UI automation; host tests plus sanitizers (ASan/UBSan) for firmware C.
-- Tests are deterministic: control time, randomness, network, external services and shared state. No live API keys, endpoints or devices in unit tests.
-- **Coverage gates are floors you may not lower.** Typical values are 80% overall, or layered gates such as Voxa's Domain 95 / Application 85 / Infrastructure 70 / Api 70.
+- **Bugs:** write a failing regression test before the fix, at the lowest level that reproduces the bug. It stays in the suite permanently.
+- Tests are deterministic: control time, randomness, network, external services and shared state. No live API keys, endpoints or devices in unit, integration or regression tests.
+- **Unit test coverage must be at least 80% (line coverage) for every tested component in the repo** (.NET project, Swift package, Node package, firmware host target). Stricter repo gates, such as Voxa's Domain 95 / Application 85, remain on top. Gates are floors: never lower them, never exclude files to pass them, and never count integration tests towards the unit-test gate.
+
+### Where each kind of test runs
+
+| Test kind | What it is | Pre-commit hook | PR / branch CI | After deploy |
+|---|---|---|---|---|
+| **Unit** | One unit in isolation, fakes at the edges | ✅ all, **+ 80% coverage gate** | ✅ all, + same gate | — |
+| **Integration** (host) | Several real components together, with local emulators/fakes for external services (e.g. Azurite, in-process HTTP host, firmware host build) | ✅ the fast, offline ones | ✅ all | — |
+| **Regression** | Permanent tests added for every fixed bug, plus golden/snapshot tests of behaviour that must not change | ✅ (they are unit or integration tests, kept forever) | ✅ | — |
+| **Contract** | Backend ↔ iOS / firmware ↔ companion API shapes | ✅ | ✅ | — |
+| **End-to-end / UI** | Full app flows, iOS UI automation | ❌ (too slow) | ✅ path-filtered | — |
+| **Smoke** | A few checks that the deployed system starts and answers | ❌ | ❌ | ✅ in the deploy pipeline. A failure fails the deployment |
+| **Device / hardware (HIL)** | Real hardware, timing, radio, display | ❌ | ❌ | Run by Simon on hardware and recorded as evidence (e.g. `docs/commissioning/`). Never claimed from host tests |
+
+Rule of thumb: anything deterministic, offline and fast enough to keep the hook reasonably quick runs in the hook. Everything else runs in CI. No test is ever skipped silently.
 - A selected test suite that discovers **zero tests must fail**.
 - **Spikes** must be labelled as spikes and followed by tests before production work continues.
 - Repository automation is tested too. `.github/scripts/*.test.mjs` / `*.test.sh` cover workflow scripts, changeset checks, release computation and review scripts. A new pipeline script needs a test.
@@ -112,7 +125,14 @@ Every behaviour change follows **Red → Green → Refactor** (`test-driven-deve
   cd "$(git rev-parse --show-toplevel)"
   exec sh scripts/test.sh
   ```
-  All stack logic lives in `scripts/test.sh`, which CI calls too. It runs root Node tests, `dotnet test`, `swift test`, firmware host tests and repository script tests as present. This gives one source of truth, so local and CI cannot drift. It also keeps the entry point testable, and lets the hook stay identical across repos. Do not put per-stack test logic inside the hook itself. Hooks that do (older project-template/Voxa shape) should migrate when they are next touched.
+  All stack logic lives in `scripts/test.sh`, which CI calls too. It runs root Node tests, `dotnet test`, `swift test`, firmware host tests and repository script tests as present.
+- **The hook fails the commit if any test fails, or if unit test coverage of any tested component is below 80%.** `scripts/test.sh` measures coverage and enforces the gate itself, with no separate opt-in step and no Python tools:
+  - **.NET:** `dotnet test` with coverlet (`/p:CollectCoverage=true /p:Threshold=80 /p:ThresholdType=line`).
+  - **Swift:** `swift test --enable-code-coverage`, then `llvm-cov report` checked against 80.
+  - **Node:** `node --test --experimental-test-coverage --test-coverage-lines=80`.
+  - **C/C++ host targets:** LLVM `-fprofile-instr-generate -fcoverage-mapping`, then `llvm-cov report` checked against 80. Stale raw profiles are cleared before each measurement.
+  
+  CI runs the same script, so the same gate blocks the PR. This gives one source of truth, so local and CI cannot drift. It also keeps the entry point testable, and lets the hook stay identical across repos. Do not put per-stack test logic inside the hook itself. Hooks that do (older project-template/Voxa shape) should migrate when they are next touched.
 - The hook validates the **staged snapshot**, so unstaged edits cannot mask a broken staged file. It runs on every commit, including docs-only commits. A missing tool, failed test or suite discovering zero tests **fails** the commit visibly rather than skipping. `scripts/test.sh` unsets `GIT_DIR`/`GIT_INDEX_FILE` (`git rev-parse --local-env-vars`) before running fixture repos.
 - If the hook fails, fix the cause. Do not bypass it.
 
@@ -144,6 +164,7 @@ Rules:
 
 ## 7. Codex code review
 
+- **Every change on a PR is reviewed.** The review runs when the PR is opened, reopened or marked ready for review, and **again on every new push** (`synchronize`). Each run reviews the complete PR diff against the base at the new head commit, so a review of an earlier commit never counts for a later one. The check must be green on the **latest** head before the PR is ready to merge. Draft PRs are not reviewed until marked ready.
 - Exactly **one** Codex review check per repo (`Codex Review`), implemented in `.github/workflows/codex-pr-review.yaml` + `.github/scripts/codex-pr-review*.mjs` with rubrics in `.github/review-rubrics/` (`pull-request-review.md`, `clean-code.md`, `clean-architecture.md`). Do not add a second review app, status or job.
 - It runs on `pull_request_target` using **base-commit scripts and rubrics only**. The PR diff is untrusted data, and PR-head code is never executed with secrets. `OPENAI_API_KEY` is a repository secret used only in the provider step. Model defaults to `gpt-5.5` (override with `CODEX_REVIEW_MODEL`).
 - The review is tied to the exact head SHA. Critical/High findings block the check. A missing key, API error, malformed output or oversized diff **fails** the check, and there is no passing fallback.
@@ -163,7 +184,10 @@ Rules:
   Short human-readable release note.
   ```
   `patch` = fixes/internal, `minor` = features, `major` = intentional breaking change. Docs-only and pure CI-version-pin PRs are exempt, as each repo's `changeset-check.sh` defines. Workflow logic, permission and script changes still need a note.
-- After the intended main commit passes required validation, `release` computes the next version from pending changesets (`compute-next-release.sh`), tags **that exact commit** `vX.Y.Z` and publishes a GitHub Release with the notes. Releases are idempotent: a retry after tagging but before publication must still produce one tag and one release.
+- **The changeset text is the release note.** Write it for a human reader: what changed, who it affects, and any action needed (migration, new secret, re-pairing a device). Never write "misc fixes".
+- After the intended main commit passes required validation, `release` computes the next version from pending changesets (`compute-next-release.sh`), tags **that exact commit** `vX.Y.Z` and publishes a **GitHub Release whose body is the release notes**: every pending changeset note, grouped by major/minor/patch. Where a repo keeps `CHANGELOG.md` or `docs/releases/`, the same notes are added there in the release PR or job. A release without notes is a failed release.
+- Releases are idempotent: a retry after tagging but before publication must still produce one tag and one release with complete notes.
+- iOS builds take their version from the release tag (§10), so every TestFlight build maps to a GitHub Release and its notes.
 
 ---
 
@@ -253,7 +277,7 @@ Task approval does not override the engineering rules or authorize merges, deplo
 
 ## 14. Definition of done
 
-- Acceptance criteria are met, and tests were written first and pass locally through the hook.
+- Acceptance criteria are met, and tests were written first and pass locally through the hook, with unit coverage ≥ 80% per tested component.
 - CI, security audit and Codex review are green, or any failure is understood, documented and explicitly accepted by Simon.
 - Changeset, docs, README, ADR/PRD are updated where required.
 - The diff is below the Codex review limit, with one intent per PR.
@@ -264,7 +288,7 @@ Task approval does not override the engineering rules or authorize merges, deplo
 
 ## Codex-specific notes
 
-- `~/.codex/skills` is a symlink to the local `custom-skills` clone, kept current by the `local.custom-skills.sync` LaunchAgent (`scripts/sync-local.sh`, hourly and at login). Invoke a skill explicitly with `$skill-name` (e.g. `$branch-discipline`), or let a matching request trigger it.
+- `~/.codex/skills` is a symlink to the local `custom-skills` clone, kept current by the `local.custom-skills.sync` LaunchAgent (`scripts/sync-local.sh`, every 5 minutes and at login). Invoke a skill explicitly with `$skill-name` (e.g. `$branch-discipline`), or let a matching request trigger it.
 - Do not edit the clone at `~/.codex/skills` directly. Changes go through a branch/worktree and a PR to `custom-skills`, and keep worktrees **outside** the clone (e.g. `../skills-worktrees/`) so Codex does not load skills twice.
 - Repo-level `AGENTS.md` files are layered on top of this one, and the nearest file to the edited path takes precedence.
 - Codex owns repo structure, backend contracts, CI/CD, infrastructure, security-sensitive flows and cross-cutting guardrails unless the repo's guidelines allocate work differently.

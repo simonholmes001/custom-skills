@@ -17,9 +17,9 @@ This repository provides a reusable catalog of custom AI assistant skills.
 2. Link the clone into Codex and Claude, and keep it current automatically (macOS):
    ```bash
    ln -s "$PWD" ~/.codex/skills          # once; Codex reads skills straight from the clone
-   bash scripts/install-local-sync.sh    # links AGENTS.md, CLAUDE.md and every skill; installs the hourly LaunchAgent
+   bash scripts/install-local-sync.sh    # links AGENTS.md, CLAUDE.md and every skill; installs the LaunchAgent
    ```
-   The `local.custom-skills.sync` LaunchAgent runs `scripts/sync-local.sh` at login and hourly. It fast-forwards the clone to `origin/main` (only while it is on `main`), links `~/.codex/AGENTS.md` and `~/.claude/CLAUDE.md` to `global-instructions/`, links each skill into `~/.claude/skills/`, and prunes links to removed skills. Existing regular files are backed up, never overwritten. The log is at `~/Library/Logs/custom-skills-sync.log`.
+   The `local.custom-skills.sync` LaunchAgent runs `scripts/sync-local.sh` at login and every 5 minutes. It fast-forwards the clone to `origin/main` (only while it is on `main`), links `~/.codex/AGENTS.md` and `~/.claude/CLAUDE.md` to `global-instructions/`, links each skill into `~/.claude/skills/`, and prunes links to removed skills. Existing regular files are backed up, never overwritten. The log is at `~/Library/Logs/custom-skills-sync.log`.
 3. Start your assistant runtime and use skills from this catalog.
 
 Do not edit the linked clone directly. Make changes in a worktree **outside** the clone (e.g. `../skills-worktrees/<branch>`) so Codex does not load skills twice, then open a PR.
